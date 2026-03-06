@@ -7,7 +7,7 @@ if($_SERVER['REQUEST_METHOD'] != 'POST'){
 }
 
 $email = isset($_POST['email']) ? mysqli_real_escape_string($conn,$_POST['email']) : '';
-$password = isset($_POST['password']) ? mysqli_real_escape_string($conn,$_POST['password']) : '';
+$password = isset($_POST['password']) ? mysqli_real_escape_string($conn,$_POST['password']) : ''; 
 
 if(empty($email) || empty($password)){
     echo json_encode(["status"=>"error","message"=>"Email and Password required"]);
@@ -17,8 +17,8 @@ if(empty($email) || empty($password)){
 $sql = "SELECT * FROM signup_info WHERE email='$email' AND password='$password'";
 $res = mysqli_query($conn,$sql);
 
-if(mysqli_num_rows($res) > 0){
-    $user = mysqli_fetch_assoc($res);
+if(mysqli_num_rows($res) > 0){ 
+    $user = mysqli_fetch_assoc($res); 
     echo json_encode([
         "status"=>"success",
         "user_id"=>$user['user_id'],
