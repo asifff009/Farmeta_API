@@ -1,15 +1,25 @@
 <?php
+header('Content-Type: application/json');
 
+// DB Connect
 $conn = mysqli_connect("localhost","root","","farmeta");
 
-$image = $_POST['image']; // base64 image
+// Receive base64 image
+$image = $_POST['image'] ?? '';
+if(!$image){
+    echo json_encode(["error"=>"No image received"]);
+    exit;
+}
 
+// Save image
 $imagePath = "uploads/" . time() . ".jpg";
-$decodedImage = base64_decode($image);
-file_put_contents($imagePath, $decodedImage);
+if(!file_put_contents($imagePath, base64_decode($image))){
+    echo json_encode(["error"=>"Failed to save image"]);
+    exit;
+}
 
-// Plant.id API Call
-$api_key = "YOUR_API_KEY";
+// Plant.id API
+$api_key = "YOUR_API_KEY"; // <-- Replace this with your real API key
 
 $data = [
     "images" => [base64_encode(file_get_contents($imagePath))],
@@ -19,7 +29,6 @@ $data = [
 ];
 
 $ch = curl_init();
-
 curl_setopt($ch, CURLOPT_URL, "https://api.plant.id/v2/identify");
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     "Content-Type: application/json",
@@ -34,16 +43,26 @@ curl_close($ch);
 
 $result = json_decode($response, true);
 
-// Extract data
-$disease_name = $result['health_assessment']['diseases'][0]['name'] ?? "Unknown";
-$confidence = $result['health_assessment']['diseases'][0]['probability'] ?? "0";
-$solution = $result['health_assessment']['diseases'][0]['treatment']['chemical'][0] ?? "No solution";
+// Debugging (optional, remove later)
+// echo "<pre>"; print_r($result); exit;
+
+// Extract data safely
+$disease_name = "Unknown";
+$confidence = "0";
+$solution = "No solution";
+
+if(!empty($result['suggestions'][0]['diseases'])){
+    $disease = $result['suggestions'][0]['diseases'][0]; // First disease
+    $disease_name = $disease['name'] ?? "Unknown";
+    $confidence = isset($result['suggestions'][0]['probability']) ? round($result['suggestions'][0]['probability']*100,2)."%" : "0";
+    $solution = $disease['treatment']['chemical'][0] ?? "No solution";
+}
 
 // Save to DB
 mysqli_query($conn,"INSERT INTO crop_disease(image,disease_name,confidence,solution)
 VALUES('$imagePath','$disease_name','$confidence','$solution')");
 
-// Response
+// Send JSON Response
 echo json_encode([
     "image"=>$imagePath,
     "disease"=>$disease_name,
