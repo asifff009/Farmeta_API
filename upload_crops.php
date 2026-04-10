@@ -17,7 +17,7 @@ $quantity    = isset($_POST['quantity']) ? mysqli_real_escape_string($conn,$_POS
 $price       = isset($_POST['price']) ? mysqli_real_escape_string($conn,$_POST['price']) : '';
 $contact     = isset($_POST['contact']) ? mysqli_real_escape_string($conn,$_POST['contact']) : '';
 $address     = isset($_POST['address']) ? mysqli_real_escape_string($conn,$_POST['address']) : '';
-$type        = isset($_POST['type']) ? mysqli_real_escape_string($conn,$_POST['type']) : ''; // new field
+$type        = isset($_POST['type']) ? mysqli_real_escape_string($conn,$_POST['type']) : '';
 $imageBase64 = isset($_POST['image']) ? $_POST['image'] : '';
 
 if(empty($first_name) || empty($last_name) || empty($crop_name) || empty($quantity) || empty($price) || empty($contact) || empty($address) || empty($type) || empty($imageBase64)){
